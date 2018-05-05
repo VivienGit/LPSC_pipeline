@@ -78,21 +78,19 @@ architecture Behavioral of mandelbrot_calculator is
   signal iterations_s         : std_logic_vector(ITER_SIZE-1 downto 0) := (others => '0');
   signal z_real_s             : std_logic_vector(SIZE-1 downto 0);
   signal z_imag_s             : std_logic_vector(SIZE-1 downto 0);
-  signal zn1_real_s           : std_logic_vector(SIZE-1 downto 0);
-  signal zn1_imag_s           : std_logic_vector(SIZE-1 downto 0);
  
   signal z_real2_big_s        : std_logic_vector(SIZE_BIG-1 downto 0);
-  signal z_real2_big_new_s    : std_logic_vector(SIZE_BIG-1 downto 0);    -- Le new c'est à gauche de la bascule !!!
+  signal zn1_real2_big_s    : std_logic_vector(SIZE_BIG-1 downto 0);    -- Le new c'est à gauche de la bascule !!!
   signal z_imag2_big_s        : std_logic_vector(SIZE_BIG-1 downto 0);
-  signal z_imag2_big_new_s    : std_logic_vector(SIZE_BIG-1 downto 0);
+  signal zn1_imag2_big_s    : std_logic_vector(SIZE_BIG-1 downto 0);
   signal z_r2_i2_big_s        : std_logic_vector(SIZE_BIG-1 downto 0); 
-  signal z_r2_i2_big_new_s    : std_logic_vector(SIZE_BIG-1 downto 0);
+  signal zn1_r2_i2_big_s    : std_logic_vector(SIZE_BIG-1 downto 0);
   signal z_ri_big_s           : std_logic_vector(SIZE_BIG-1 downto 0);
-  signal z_ri_big_new_s       : std_logic_vector(SIZE_BIG-1 downto 0);
+  signal zn1_ri_big_s       : std_logic_vector(SIZE_BIG-1 downto 0);
   signal z_2ri_big_s          : std_logic_vector(SIZE_BIG-1 downto 0); 
-  signal z_2ri_big_new_s      : std_logic_vector(SIZE_BIG-1 downto 0); 
-  signal zn1_real_new_s       : std_logic_vector(SIZE_BIG-1 downto 0);
-  signal zn1_imag_new_s       : std_logic_vector(SIZE_BIG-1 downto 0);
+  signal zn1_2ri_big_s      : std_logic_vector(SIZE_BIG-1 downto 0); 
+  signal zn1_real_s       : std_logic_vector(SIZE_BIG-1 downto 0);
+  signal zn1_imag_s       : std_logic_vector(SIZE_BIG-1 downto 0);
   
   signal radius_big_s         : std_logic_vector(SIZE_BIG downto 0);    -- No minus 1, we extend
   signal radius_s             : std_logic_vector(SIZE_RADIUS downto 0); -- same
@@ -109,18 +107,14 @@ begin
   ----------------------------------------------
   --             calc_proc             ---------
   ----------------------------------------------
-  calc_proc : process (z_real_s, z_imag_s, zn1_real_s, zn1_imag_s, z_real2_big_s, z_imag2_big_s, radius_big_s, radius_s, z_r2_i2_big_s, z_2ri_big_s, c_imaginary_i, c_real_i)
+  calc_proc : process (z_real_s, z_imag_s, z_real2_big_s, z_imag2_big_s, radius_big_s, radius_s, z_r2_i2_big_s, z_2ri_big_s, c_imaginary_i, c_real_i)
   begin
     -- We only know if its finished later
     stop_mandel_counter_s <= false;
-
-    -- At the begining z_real_s and z_imag_s are set to 0
-    zn1_real_s <= z_real_s; 
-    zn1_imag_s <= z_imag_s;
     
     -- Calcul the squared of the input values   
-    z_real2_big_new_s   <= std_logic_vector(signed(zn1_real_s)*signed(zn1_real_s));
-    z_imag2_big_new_s   <= std_logic_vector(signed(zn1_imag_s)*signed(zn1_imag_s));
+    zn1_real2_big_s   <= std_logic_vector(signed(z_real_s)*signed(z_real_s));
+    zn1_imag2_big_s   <= std_logic_vector(signed(z_imag_s)*signed(z_imag_s));
           
     -- Calcul the radius to test if we need to stop
     radius_big_s    <= std_logic_vector(signed(z_real2_big_s(SIZE_BIG-1) & z_real2_big_s)+signed(z_imag2_big_s(SIZE_BIG-1) & z_imag2_big_s));
@@ -130,16 +124,16 @@ begin
     if signed(radius_s) < 4 AND unsigned(iterations_s) < max_iter then
         ----------------- Calcul the real part      --------------------
         -- Substraction of the squared inputs
-        z_r2_i2_big_new_s   <= std_logic_vector(signed(z_real2_big_s)-signed(z_imag2_big_s));
+        zn1_r2_i2_big_s   <= std_logic_vector(signed(z_real2_big_s)-signed(z_imag2_big_s));
         -- New value of the output (next value of the input)
-        zn1_real_new_s  <= std_logic_vector(signed(c_real_i & EXTEND_COMMA) + signed(z_r2_i2_big_s));
+        zn1_real_s  <= std_logic_vector(signed(c_real_i & EXTEND_COMMA) + signed(z_r2_i2_big_s));
         
         ----------------- Calcul the imaginary part  --------------
         -- Multiplication of the two inputs and multiplication by 2
-        z_ri_big_new_s    <= std_logic_vector(signed(zn1_real_s)*signed(zn1_imag_s));
-        z_2ri_big_new_s   <= z_ri_big_s(SIZE_BIG-2 downto 0) & '0'; 
+        zn1_ri_big_s    <= std_logic_vector(signed(z_real_s)*signed(z_imag_s));
+        zn1_2ri_big_s   <= z_ri_big_s(SIZE_BIG-2 downto 0) & '0'; 
         -- New value of the output (next value of the input)       
-        zn1_imag_new_s  <= std_logic_vector(signed(c_imaginary_i & EXTEND_COMMA) + signed(z_2ri_big_s));
+        zn1_imag_s  <= std_logic_vector(signed(c_imaginary_i & EXTEND_COMMA) + signed(z_2ri_big_s));
           
     else 
         stop_mandel_counter_s <= true;
@@ -150,8 +144,8 @@ begin
     ----------------------------------------------
      --       Output Buffer and synch           --
     ----------------------------------------------    
-    buffer_proc : process (clk_i, rst_i, soft_reset_s, zn1_real_new_s, zn1_imag_new_s, x_i, y_i, z_real2_big_new_s, 
-                           z_imag2_big_new_s, z_r2_i2_big_new_s, z_ri_big_new_s, z_2ri_big_new_s, calc_in_progress_s)
+    buffer_proc : process (clk_i, rst_i, soft_reset_s, zn1_real_s, zn1_imag_s, x_i, y_i, zn1_real2_big_s, 
+                           zn1_imag2_big_s, zn1_r2_i2_big_s, zn1_ri_big_s, zn1_2ri_big_s, calc_in_progress_s)
     begin        
         if (rst_i = '1') then
             iterations_s      <= (others => '0'); -- Start the calculation
@@ -188,13 +182,13 @@ begin
                     pipe_count_s <= pipe_count_s + 1;
                   end if; 
                   
-                  z_real_s          <= zn1_real_new_s(SIZE_IN_BIG-1 downto comma);               
-                  z_imag_s          <= zn1_imag_new_s(SIZE_IN_BIG-1 downto comma);
-                  z_real2_big_s     <= z_real2_big_new_s;
-                  z_imag2_big_s     <= z_imag2_big_new_s;
-                  z_r2_i2_big_s     <= z_r2_i2_big_new_s;
-                  z_ri_big_s        <= z_ri_big_new_s;
-                  z_2ri_big_s       <= z_2ri_big_new_s;
+                  z_real_s          <= zn1_real_s(SIZE_IN_BIG-1 downto comma);               
+                  z_imag_s          <= zn1_imag_s(SIZE_IN_BIG-1 downto comma);
+                  z_real2_big_s     <= zn1_real2_big_s;
+                  z_imag2_big_s     <= zn1_imag2_big_s;
+                  z_r2_i2_big_s     <= zn1_r2_i2_big_s;
+                  z_ri_big_s        <= zn1_ri_big_s;
+                  z_2ri_big_s       <= zn1_2ri_big_s;
                end if;
             end if;
         end if;

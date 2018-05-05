@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<GenRun Id="impl_1" LaunchPart="xc7a200tsbg484-1" LaunchTime="1525507433">
-  <File Type="PWROPT-DCP" Name="mse_mandelbrot_pwropt.dcp"/>
+<GenRun Id="impl_1" LaunchPart="xc7a200tsbg484-1" LaunchTime="1525535057">
+  <File Type="OPT-HWDEF" Name="mse_mandelbrot.hwdef"/>
+  <File Type="PA-DCP" Name="mse_mandelbrot.dcp"/>
+  <File Type="OPT-DCP" Name="mse_mandelbrot_opt.dcp"/>
   <File Type="ROUTE-PWR" Name="mse_mandelbrot_power_routed.rpt"/>
   <File Type="PA-TCL" Name="mse_mandelbrot.tcl"/>
   <File Type="ROUTE-PWR-SUM" Name="mse_mandelbrot_power_summary_routed.pb"/>
@@ -8,10 +10,9 @@
   <File Type="BG-DRC" Name="mse_mandelbrot.drc"/>
   <File Type="OPT-METHODOLOGY-DRC" Name="mse_mandelbrot_methodology_drc_opted.rpt"/>
   <File Type="INIT-TIMING" Name="mse_mandelbrot_timing_summary_init.rpt"/>
-  <File Type="OPT-HWDEF" Name="mse_mandelbrot.hwdef"/>
-  <File Type="OPT-DCP" Name="mse_mandelbrot_opt.dcp"/>
   <File Type="OPT-DRC" Name="mse_mandelbrot_drc_opted.rpt"/>
   <File Type="OPT-TIMING" Name="mse_mandelbrot_timing_summary_opted.rpt"/>
+  <File Type="PWROPT-DCP" Name="mse_mandelbrot_pwropt.dcp"/>
   <File Type="PWROPT-DRC" Name="mse_mandelbrot_drc_pwropted.rpt"/>
   <File Type="PWROPT-TIMING" Name="mse_mandelbrot_timing_summary_pwropted.rpt"/>
   <File Type="PLACE-DCP" Name="mse_mandelbrot_placed.dcp"/>
