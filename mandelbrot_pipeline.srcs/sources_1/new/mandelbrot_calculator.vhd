@@ -69,12 +69,12 @@ architecture Behavioral of mandelbrot_calculator is
   constant WAIT_start_i_STATE   : std_logic_vector := "00";  -- Inital state
   constant CALC_STATE           : std_logic_vector := "01";
   constant finished_o_STATE     : std_logic_vector := "10"; 
-  signal next_state, current_state : std_logic_vector (1 downto 0);
+  signal next_state_s, current_states : std_logic_vector (1 downto 0);
   
   -- Calculation signals
-  signal reset_val            : boolean := false;
+  signal soft_reset_s         : boolean := false;
   signal stop_mandel_counter_s: boolean := false; 
-  signal calc_in_progress     : boolean := false;
+  signal calc_in_progress_s   : boolean := false;
   signal iterations_s         : std_logic_vector(ITER_SIZE-1 downto 0) := (others => '0');
   signal z_real_s             : std_logic_vector(SIZE-1 downto 0);
   signal z_imag_s             : std_logic_vector(SIZE-1 downto 0);
@@ -150,7 +150,8 @@ begin
     ----------------------------------------------
      --       Output Buffer and synch           --
     ----------------------------------------------    
-    buffer_proc : process (clk_i, rst_i, reset_val, zn1_real_new_s, zn1_imag_new_s, x_i, y_i, z_real2_big_new_s, z_imag2_big_new_s, z_r2_i2_big_new_s, z_ri_big_new_s, z_2ri_big_new_s)
+    buffer_proc : process (clk_i, rst_i, soft_reset_s, zn1_real_new_s, zn1_imag_new_s, x_i, y_i, z_real2_big_new_s, 
+                           z_imag2_big_new_s, z_r2_i2_big_new_s, z_ri_big_new_s, z_2ri_big_new_s, calc_in_progress_s)
     begin        
         if (rst_i = '1') then
             iterations_s      <= (others => '0'); -- Start the calculation
@@ -163,7 +164,7 @@ begin
             z_2ri_big_s       <= (others => '0');
             pipe_count_s      <= 0;
         elsif Rising_Edge(clk_i) then
-            if reset_val then                 
+            if soft_reset_s then                 
                 iterations_s      <= (others => '0'); -- Start the calculation
                 z_real_s          <= (others => '0');
                 z_imag_s          <= (others => '0');
@@ -176,7 +177,7 @@ begin
             else
               x_o             <= x_i;
               y_o             <= y_i;
-              if not stop_mandel_counter_s and calc_in_progress then
+              if not stop_mandel_counter_s and calc_in_progress_s then
                   if pipe_count_s = 0 then
                     iterations_s  <= std_logic_vector(unsigned(iterations_s) + 1);
                   end if;
@@ -202,36 +203,36 @@ begin
     ----------------------------------------------
     --           State machine                  --
     ----------------------------------------------    
-    state_machine : process (current_state, start_i, stop_mandel_counter_s)
+    state_machine : process (current_states, start_i, stop_mandel_counter_s)
     begin
-        next_state <= WAIT_start_i_STATE;
+        next_state_s <= WAIT_start_i_STATE;
         finished_o <= '0';
         ready_o <= '0';
-        reset_val <= false;
-        calc_in_progress <= false;
+        soft_reset_s <= false;
+        calc_in_progress_s <= false;
                
         -- State machine
-        case current_state is
+        case current_states is
             when WAIT_START_I_STATE =>
               ready_o <= '1';
               if start_i = '1' then
-                reset_val   <= true;
-                next_state  <= CALC_STATE;
+                soft_reset_s   <= true;
+                next_state_s  <= CALC_STATE;
               else
-                next_state <= WAIT_START_I_STATE;
+                next_state_s <= WAIT_START_I_STATE;
               end if;
             when CALC_STATE  =>
               if stop_mandel_counter_s then
-                next_state <= finished_o_STATE;
+                next_state_s <= finished_o_STATE;
               else
-                calc_in_progress <= true;
-                next_state <= CALC_STATE;
+                calc_in_progress_s <= true;
+                next_state_s <= CALC_STATE;
               end if;
             when finished_o_STATE  =>
-              next_state <= WAIT_start_i_STATE;
+              next_state_s <= WAIT_start_i_STATE;
               finished_o <= '1';
             when others => 
-              next_state <= WAIT_start_i_STATE;
+              next_state_s <= WAIT_start_i_STATE;
         end case;
     
     end process; -- state_machine
@@ -242,9 +243,9 @@ begin
   	 synch_proc : process (clk_i, rst_i)
      begin
         if (rst_i = '1') then
-          current_state <= WAIT_start_i_STATE;
+          current_states <= WAIT_start_i_STATE;
         elsif Rising_Edge(clk_i) then
-          current_state <= next_state;
+          current_states <= next_state_s;
         end if;
     end process; -- synch_proc
     

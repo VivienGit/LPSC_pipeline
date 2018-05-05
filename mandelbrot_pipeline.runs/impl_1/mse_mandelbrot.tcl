@@ -184,6 +184,7 @@ start_step write_bitstream
 set ACTIVE_STEP write_bitstream
 set rc [catch {
   create_msg_db write_bitstream.pb
+  set_param xicom.use_bs_reader 1
   open_checkpoint mse_mandelbrot_routed.dcp
   set_property webtalk.parent_dir C:/Users/Vivien/Documents/Master/S2/LPSC/Mandelbrot_pipeline/mandelbrot_pipeline/mandelbrot_pipeline.cache/wt [current_project]
   set_property XPM_LIBRARIES {XPM_CDC XPM_MEMORY} [current_project]
