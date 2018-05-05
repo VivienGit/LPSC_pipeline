@@ -24,7 +24,7 @@ else
 fi
 export LD_LIBRARY_PATH
 
-HD_PWD='C:/Users/Vivien/Documents/Master/S2/LPSC/Section11/mse_mandelbrot_no_bram/mse_mandelbrot.runs/synth_1'
+HD_PWD='C:/Users/Vivien/Documents/Master/S2/LPSC/Mandelbrot_pipeline/mandelbrot_pipeline/mandelbrot_pipeline.runs/synth_1'
 cd "$HD_PWD"
 
 HD_LOG=runme.log

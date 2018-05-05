@@ -24,7 +24,7 @@ else
 fi
 export LD_LIBRARY_PATH
 
-HD_PWD='C:/Users/Vivien/Documents/Master/S2/LPSC/Section11/mse_mandelbrot_no_bram/mse_mandelbrot.runs/impl_1'
+HD_PWD='C:/Users/Vivien/Documents/Master/S2/LPSC/Mandelbrot_pipeline/mandelbrot_pipeline/mandelbrot_pipeline.runs/impl_1'
 cd "$HD_PWD"
 
 HD_LOG=runme.log
@@ -41,7 +41,7 @@ EAStep()
 }
 
 # pre-commands:
-/bin/touch .init_design.begin.rst
+/bin/touch .write_bitstream.begin.rst
 EAStep vivado -log mse_mandelbrot.vdi -applog -m64 -product Vivado -messageDb vivado.pb -mode batch -source mse_mandelbrot.tcl -notrace
 
 

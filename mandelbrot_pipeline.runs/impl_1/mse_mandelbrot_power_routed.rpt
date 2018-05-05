@@ -1,7 +1,7 @@
 Copyright 1986-2017 Xilinx, Inc. All Rights Reserved.
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
 | Tool Version     : Vivado v.2017.4 (win64) Build 2086221 Fri Dec 15 20:55:39 MST 2017
-| Date             : Tue Apr 17 19:52:03 2018
+| Date             : Sat May  5 09:41:07 2018
 | Host             : Vivien-HP running 64-bit Service Pack 1  (build 7601)
 | Command          : report_power -file mse_mandelbrot_power_routed.rpt -pb mse_mandelbrot_power_summary_routed.pb -rpx mse_mandelbrot_power_routed.rpx
 | Design           : mse_mandelbrot
@@ -30,7 +30,7 @@ Table of Contents
 ----------
 
 +--------------------------+--------------+
-| Total On-Chip Power (W)  | 0.315        |
+| Total On-Chip Power (W)  | 0.314        |
 | Design Power Budget (W)  | Unspecified* |
 | Power Budget Margin (W)  | NA           |
 | Dynamic (W)              | 0.169        |
@@ -53,20 +53,20 @@ Table of Contents
 | On-Chip        | Power (W) | Used     | Available | Utilization (%) |
 +----------------+-----------+----------+-----------+-----------------+
 | Clocks         |     0.013 |        7 |       --- |             --- |
-| Slice Logic    |     0.001 |     1019 |       --- |             --- |
-|   LUT as Logic |    <0.001 |      476 |    133800 |            0.36 |
-|   CARRY4       |    <0.001 |       24 |     33450 |            0.07 |
-|   Register     |    <0.001 |      263 |    267600 |            0.10 |
+| Slice Logic    |     0.002 |     1472 |       --- |             --- |
+|   LUT as Logic |     0.002 |      647 |    133800 |            0.48 |
+|   CARRY4       |    <0.001 |       52 |     33450 |            0.16 |
+|   Register     |    <0.001 |      407 |    267600 |            0.15 |
 |   BUFG         |    <0.001 |        1 |        32 |            3.13 |
 |   F7/F8 Muxes  |    <0.001 |        6 |    133800 |           <0.01 |
 |   Others       |     0.000 |      193 |       --- |             --- |
-| Signals        |     0.006 |     1016 |       --- |             --- |
+| Signals        |     0.006 |     1192 |       --- |             --- |
 | Block RAM      |     0.009 |    131.5 |       365 |           36.03 |
 | MMCM           |     0.125 |        1 |        10 |           10.00 |
-| DSPs           |     0.004 |        4 |       740 |            0.54 |
+| DSPs           |     0.002 |        3 |       740 |            0.41 |
 | I/O            |     0.012 |       11 |       285 |            3.86 |
 | Static Power   |     0.145 |          |           |                 |
-| Total          |     0.315 |          |           |                 |
+| Total          |     0.314 |          |           |                 |
 +----------------+-----------+----------+-----------+-----------------+
 
 
@@ -150,7 +150,7 @@ Table of Contents
 | Name                                                | Power (W) |
 +-----------------------------------------------------+-----------+
 | mse_mandelbrot                                      |     0.169 |
-|   ComplexeValueGeneratorxB.ComplexeValueGeneratorxI |     0.002 |
+|   ComplexeValueGeneratorxB.ComplexeValueGeneratorxI |     0.001 |
 |   HdmixI                                            |     0.144 |
 |     ClkVgaHdmi1024x600xG.ClkVgaHdmi1024x600xI       |     0.127 |
 |       inst                                          |     0.127 |
@@ -164,11 +164,11 @@ Table of Contents
 |       TmdsEncoderC2xI                               |    <0.001 |
 |     VgaxI                                           |     0.002 |
 |       VgaControlerxI                                |     0.002 |
-|   blk_mem_bramxB.blk_mem_bramxI                     |     0.015 |
-|     U0                                              |     0.015 |
-|       inst_blk_mem_gen                              |     0.015 |
-|         gnbram.gnativebmg.native_blk_mem_gen        |     0.015 |
-|           valid.cstr                                |     0.015 |
+|   blk_mem_bramxB.blk_mem_bramxI                     |     0.013 |
+|     U0                                              |     0.013 |
+|       inst_blk_mem_gen                              |     0.013 |
+|         gnbram.gnativebmg.native_blk_mem_gen        |     0.013 |
+|           valid.cstr                                |     0.013 |
 |             has_mux_b.B                             |    <0.001 |
 |             ramloop[0].ram.r                        |    <0.001 |
 |               prim_noinit.ram                       |    <0.001 |
@@ -310,7 +310,7 @@ Table of Contents
 |               prim_noinit.ram                       |    <0.001 |
 |             ramloop[9].ram.r                        |    <0.001 |
 |               prim_noinit.ram                       |    <0.001 |
-|   mandelbrot_calculatorxB.mandelbrot_calculatorxI   |     0.009 |
+|   mandelbrot_calculatorxB.mandelbrot_calculatorxI   |     0.011 |
 +-----------------------------------------------------+-----------+
 
 

@@ -19,6 +19,7 @@
 -- 25.03.2018   0.0      VKR      Created
 -- 02.03.2018   0.0      VKR      Sequential version
 -- 07.03.2018   1.0      VKR      Combinatory version
+-- 05.05.2018   2.0      VKR      Adding the buffer for the pipeline
 -------------------------------------------------------------------------------
 
 library ieee;
@@ -72,7 +73,7 @@ architecture Behavioral of mandelbrot_calculator is
   
   -- Calculation signals
   signal reset_val            : boolean := false;
-  signal calc_finished_s      : boolean := false; 
+  signal stop_mandel_counter_s: boolean := false; 
   signal calc_in_progress     : boolean := false;
   signal iterations_s         : std_logic_vector(ITER_SIZE-1 downto 0) := (others => '0');
   signal z_real_s             : std_logic_vector(SIZE-1 downto 0);
@@ -81,17 +82,23 @@ architecture Behavioral of mandelbrot_calculator is
   signal zn1_imag_s           : std_logic_vector(SIZE-1 downto 0);
  
   signal z_real2_big_s        : std_logic_vector(SIZE_BIG-1 downto 0);
+  signal z_real2_big_new_s    : std_logic_vector(SIZE_BIG-1 downto 0);    -- Le new c'est à gauche de la bascule !!!
   signal z_imag2_big_s        : std_logic_vector(SIZE_BIG-1 downto 0);
+  signal z_imag2_big_new_s    : std_logic_vector(SIZE_BIG-1 downto 0);
   signal z_r2_i2_big_s        : std_logic_vector(SIZE_BIG-1 downto 0); 
+  signal z_r2_i2_big_new_s    : std_logic_vector(SIZE_BIG-1 downto 0);
   signal z_ri_big_s           : std_logic_vector(SIZE_BIG-1 downto 0);
-  signal z_2ri_big_s          : std_logic_vector(SIZE_BIG-1 downto 0);  
+  signal z_ri_big_new_s       : std_logic_vector(SIZE_BIG-1 downto 0);
+  signal z_2ri_big_s          : std_logic_vector(SIZE_BIG-1 downto 0); 
+  signal z_2ri_big_new_s      : std_logic_vector(SIZE_BIG-1 downto 0); 
   signal zn1_real_new_s       : std_logic_vector(SIZE_BIG-1 downto 0);
   signal zn1_imag_new_s       : std_logic_vector(SIZE_BIG-1 downto 0);
   
   signal radius_big_s         : std_logic_vector(SIZE_BIG downto 0);    -- No minus 1, we extend
   signal radius_s             : std_logic_vector(SIZE_RADIUS downto 0); -- same
   
-
+  -- Pipeline
+  signal pipe_count_s         : integer := 0;   -- se balade de 0 à 2 pour ne compter qu'une fois sur 3
     
 begin
 
@@ -102,18 +109,18 @@ begin
   ----------------------------------------------
   --             calc_proc             ---------
   ----------------------------------------------
-  calc_proc : process (z_real_s, z_imag_s, zn1_real_s, zn1_imag_s, z_real2_big_s, z_imag2_big_s, radius_big_s, radius_s, z_r2_i2_big_s, z_2ri_big_s, zn1_imag_new_s, c_imaginary_i, c_real_i)
+  calc_proc : process (z_real_s, z_imag_s, zn1_real_s, zn1_imag_s, z_real2_big_s, z_imag2_big_s, radius_big_s, radius_s, z_r2_i2_big_s, z_2ri_big_s, c_imaginary_i, c_real_i)
   begin
     -- We only know if its finished later
-    calc_finished_s <= false;
+    stop_mandel_counter_s <= false;
 
     -- At the begining z_real_s and z_imag_s are set to 0
     zn1_real_s <= z_real_s; 
     zn1_imag_s <= z_imag_s;
     
     -- Calcul the squared of the input values   
-    z_real2_big_s   <= std_logic_vector(signed(zn1_real_s)*signed(zn1_real_s));
-    z_imag2_big_s   <= std_logic_vector(signed(zn1_imag_s)*signed(zn1_imag_s));
+    z_real2_big_new_s   <= std_logic_vector(signed(zn1_real_s)*signed(zn1_real_s));
+    z_imag2_big_new_s   <= std_logic_vector(signed(zn1_imag_s)*signed(zn1_imag_s));
           
     -- Calcul the radius to test if we need to stop
     radius_big_s    <= std_logic_vector(signed(z_real2_big_s(SIZE_BIG-1) & z_real2_big_s)+signed(z_imag2_big_s(SIZE_BIG-1) & z_imag2_big_s));
@@ -123,19 +130,19 @@ begin
     if signed(radius_s) < 4 AND unsigned(iterations_s) < max_iter then
         ----------------- Calcul the real part      --------------------
         -- Substraction of the squared inputs
-        z_r2_i2_big_s   <= std_logic_vector(signed(z_real2_big_s)-signed(z_imag2_big_s));
+        z_r2_i2_big_new_s   <= std_logic_vector(signed(z_real2_big_s)-signed(z_imag2_big_s));
         -- New value of the output (next value of the input)
         zn1_real_new_s  <= std_logic_vector(signed(c_real_i & EXTEND_COMMA) + signed(z_r2_i2_big_s));
         
         ----------------- Calcul the imaginary part  --------------
         -- Multiplication of the two inputs and multiplication by 2
-        z_ri_big_s    <= std_logic_vector(signed(zn1_real_s)*signed(zn1_imag_s));
-        z_2ri_big_s   <= z_ri_big_s(SIZE_BIG-2 downto 0) & '0'; 
+        z_ri_big_new_s    <= std_logic_vector(signed(zn1_real_s)*signed(zn1_imag_s));
+        z_2ri_big_new_s   <= z_ri_big_s(SIZE_BIG-2 downto 0) & '0'; 
         -- New value of the output (next value of the input)       
         zn1_imag_new_s  <= std_logic_vector(signed(c_imaginary_i & EXTEND_COMMA) + signed(z_2ri_big_s));
           
     else 
-        calc_finished_s <= true;
+        stop_mandel_counter_s <= true;
     end if;
       
   end process; -- calc_proc
@@ -143,23 +150,51 @@ begin
     ----------------------------------------------
      --       Output Buffer and synch           --
     ----------------------------------------------    
-    buffer_proc : process (clk_i, rst_i, reset_val, zn1_real_new_s, zn1_imag_new_s, x_i, y_i)
+    buffer_proc : process (clk_i, rst_i, reset_val, zn1_real_new_s, zn1_imag_new_s, x_i, y_i, z_real2_big_new_s, z_imag2_big_new_s, z_r2_i2_big_new_s, z_ri_big_new_s, z_2ri_big_new_s)
     begin        
         if (rst_i = '1') then
             iterations_s      <= (others => '0'); -- Start the calculation
             z_real_s          <= (others => '0');
             z_imag_s          <= (others => '0');
-        elsif reset_val then                 
-            iterations_s    <= (others => '0'); -- Start the calculation
-            z_real_s        <= (others => '0');
-            z_imag_s        <= (others => '0');
+            z_real2_big_s     <= (others => '0');
+            z_imag2_big_s     <= (others => '0');
+            z_r2_i2_big_s     <= (others => '0');
+            z_ri_big_s        <= (others => '0');
+            z_2ri_big_s       <= (others => '0');
+            pipe_count_s      <= 0;
         elsif Rising_Edge(clk_i) then
-            x_o             <= x_i;
-            y_o             <= y_i;
-            if not calc_finished_s and calc_in_progress then
-                iterations_s    <= std_logic_vector(unsigned(iterations_s) + 1);
-                z_real_s        <= zn1_real_new_s(SIZE_IN_BIG-1 downto comma);               
-                z_imag_s        <= zn1_imag_new_s(SIZE_IN_BIG-1 downto comma);
+            if reset_val then                 
+                iterations_s      <= (others => '0'); -- Start the calculation
+                z_real_s          <= (others => '0');
+                z_imag_s          <= (others => '0');
+                z_real2_big_s     <= (others => '0');
+                z_imag2_big_s     <= (others => '0');
+                z_r2_i2_big_s     <= (others => '0');
+                z_ri_big_s        <= (others => '0');
+                z_2ri_big_s       <= (others => '0');
+                pipe_count_s      <= 0;
+            else
+              x_o             <= x_i;
+              y_o             <= y_i;
+              if not stop_mandel_counter_s and calc_in_progress then
+                  if pipe_count_s = 0 then
+                    iterations_s  <= std_logic_vector(unsigned(iterations_s) + 1);
+                  end if;
+                  
+                  if pipe_count_s >= 2 then
+                    pipe_count_s <= 0;
+                  else
+                    pipe_count_s <= pipe_count_s + 1;
+                  end if; 
+                  
+                  z_real_s          <= zn1_real_new_s(SIZE_IN_BIG-1 downto comma);               
+                  z_imag_s          <= zn1_imag_new_s(SIZE_IN_BIG-1 downto comma);
+                  z_real2_big_s     <= z_real2_big_new_s;
+                  z_imag2_big_s     <= z_imag2_big_new_s;
+                  z_r2_i2_big_s     <= z_r2_i2_big_new_s;
+                  z_ri_big_s        <= z_ri_big_new_s;
+                  z_2ri_big_s       <= z_2ri_big_new_s;
+               end if;
             end if;
         end if;
     end process; -- buffer_proc
@@ -167,7 +202,7 @@ begin
     ----------------------------------------------
     --           State machine                  --
     ----------------------------------------------    
-    state_machine : process (current_state, start_i, calc_finished_s)
+    state_machine : process (current_state, start_i, stop_mandel_counter_s)
     begin
         next_state <= WAIT_start_i_STATE;
         finished_o <= '0';
@@ -186,7 +221,7 @@ begin
                 next_state <= WAIT_START_I_STATE;
               end if;
             when CALC_STATE  =>
-              if calc_finished_s then
+              if stop_mandel_counter_s then
                 next_state <= finished_o_STATE;
               else
                 calc_in_progress <= true;
